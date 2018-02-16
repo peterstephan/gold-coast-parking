@@ -1,0 +1,991 @@
+<!--
+GOLD COAST INTERACTIVE PARKING MAP
+@Author: Peter Stephan, February 2018
+
+Licence for some of original source code:
+
+The MIT License (MIT)
+
+Copyright (c) 2013-2014 Bryan McBride
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Licence for Grouped Layer Control
+
+Copyright 2013 Ishmael Smyrnow
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Gold Coast Parking Map</title>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#f48942">
+    <meta name="description" content="Transport Model Viewer">
+    <meta name="author" content="Peter Stephan">
+
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+  	<script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet-src.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-groupedlayercontrol/0.6.0/leaflet.groupedlayercontrol.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXUzjiMoEeG1KrkvrQUvgxwljg9BLgMh0" async defer></script>
+    <script src='https://unpkg.com/leaflet.gridlayer.googlemutant@latest/Leaflet.GoogleMutant.js'></script>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" >
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-hash/0.2.1/leaflet-hash.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-measure@2.1.7/dist/leaflet-measure.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.3.0/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.3.0/dist/MarkerCluster.Default.css">
+    <script src="https://unpkg.com/leaflet.markercluster@1.3.0/dist/leaflet.markercluster-src.js"></script>
+    <script src="https://unpkg.com/Leaflet.Deflate@1.0.0-alpha.2/dist/L.Deflate.js"></script>
+
+
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.5/typeahead.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.1.1/list.min.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/L.Control.Locate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-measure@2.1.7/dist/leaflet-measure.min.js"></script>
+
+
+    <!-- FAVICONS -->
+    <link rel="apple-touch-icon" sizes="76x76" href="">
+    <link rel="apple-touch-icon" sizes="120x120" href="">
+    <link rel="apple-touch-icon" sizes="152x152" href="">
+    <link rel="icon" sizes="196x196" href="">
+    <link rel="icon" type="image/x-icon" href="">
+
+
+    <style>
+
+      html, body, #container {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
+      body {
+        padding-top: 50px;
+        font-family: 'Open+Sans', sans-serif;
+      }
+      #navbar-container {
+        color: #000000;
+        background-color: white; /* #f48942 .... white = #FFFFFF*/
+        border-bottom-color: #ff6600; /* white */
+        border-bottom-width: 2px;
+      }
+      input[type="radio"], input[type="checkbox"] {
+        margin: 0;
+      }
+      #sidebar {
+        display: block;
+        width: 250px;
+        height: 100%;
+        max-width: 100%;
+        float: left;
+      }
+      #map {
+        width: auto;
+        height: 100%;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      }
+      #loading {
+        position: absolute;
+        width: 220px;
+        height: 19px;
+        top: 50%;
+        left: 50%;
+        margin: -10px 0 0 -110px;
+        z-index: 20001;
+      }
+      #features {
+        margin: 0px;
+        border: none;
+        border-radius: 0px;
+        -webkit-box-shadow: none;
+          box-shadow: none;
+      }
+      #sidebar-hide-btn {
+        margin-top: -2px;
+      }
+      #aboutTabsContent {
+        padding-top: 10px;
+      }
+      .progress-bar-full {
+        width: 100%;
+      }
+      .white {
+        color: #FFFFFF;
+      }
+      .panel-heading{
+         width: 250px;
+      }
+      .panel-body{
+        width: 250px;
+      }
+      .feature-row {
+        cursor: pointer;
+        width: 250px;
+      }
+      .sidebar-wrapper {
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+      .sidebar-table {
+        position: absolute;
+        width: 100%;
+        top: 103px;
+        bottom: 0px;
+        overflow: auto;
+      }
+      .leaflet-control-layers {
+        overflow: auto;
+      }
+      .leaflet-control-layers label {
+        font-weight: normal;
+        margin-bottom: 0px;
+      }
+      .leaflet-control-layers-list input[type="radio"], input[type="checkbox"] {
+        margin: 2px;
+      }
+      .table {
+        margin-bottom: 0px;
+      }
+      .navbar .navbar-brand {
+        font-weight: bold;
+        font-size: 25px;
+        color: #FFFFFF;
+      }
+      .navbar-brand img {
+        height: 100%;
+        margin-top: -5px;
+        margin-right: 15px;
+        display: inline;
+      }
+      .navbar-collapse.in {
+        overflow-y: hidden;
+      }
+      .navbar-header .navbar-icon-container {
+        margin-right: 15px;
+      }
+      .navbar-header .navbar-icon {
+        line-height: 50px;
+        height: 50px;
+      }
+      .navbar-header a.navbar-icon {
+        margin-left: 25px;
+      }
+      .typeahead {
+        background-color: #FFFFFF;
+      }
+      .tt-dropdown-menu {
+        background-color: #FFFFFF;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 4px 4px 4px 4px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        margin-top: 4px;
+        padding: 4px 0;
+        width: 100%;
+        max-height: 300px;
+        overflow: auto;
+      }
+      .tt-suggestion {
+        font-size: 14px;
+        line-height: 20px;
+        padding: 3px 10px;
+      }
+      .tt-suggestion.tt-cursor {
+        background-color: #0097CF;
+        color: #FFFFFF;
+        cursor: pointer;
+      }
+      .tt-suggestion p {
+        margin: 0;
+      }
+      .tt-suggestion + .tt-suggestion {
+        border-top: 1px solid #ccc;
+      }
+      .typeahead-header {
+        margin: 0 5px 5px 5px;
+        padding: 3px 0;
+        border-bottom: 2px solid #333;
+      }
+      .has-feedback .form-control-feedback {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: block;
+        width: 34px;
+        height: 34px;
+        line-height: 34px;
+        text-align: center;
+      }
+      @media (max-width: 992px) {
+        .navbar .navbar-brand {
+          font-size: 18px;
+        }
+      }
+      @media (max-width: 767px){
+        #sidebar {
+          display: none;
+        }
+        .url-break {
+          word-break: break-all;
+          word-break: break-word;
+          -webkit-hyphens: auto;
+            hyphens: auto;
+        }
+        .dropdown-menu a i{
+          color: #FFFFFF;
+        }
+      }
+      /* Print Handling */
+      @media print {
+        .navbar {
+          display: none !important;
+        }
+        .leaflet-control-container {
+          display: none !important;
+        }
+      }
+      .info {
+        padding: 6px 8px;
+        font: 14px/16px Arial, Helvetica, sans-serif;
+        background: white;
+        background: rgba(255,255,255,0.8);
+        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        border-radius: 5px;
+        }
+      .info h4 {
+        margin: 0 0 5px;
+        color: #777;
+      }
+      .legend {
+        text-align: left;
+        line-height: 18px;
+        color: #555;
+        }
+      .legend i {
+        width: 18px;
+        height: 18px;
+        float: left;
+        margin-right: 8px;
+        opacity: 0.7;
+        }
+
+    </style>
+
+
+  </head>
+
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation" id="navbar-container">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <div class="navbar-icon-container">
+            <a href="#" class="navbar-icon pull-right visible-xs" id="nav-btn"><i class="fa fa-bars fa-lg white"></i></a>
+            <a href="#" class="navbar-icon pull-right visible-xs" id="sidebar-toggle-btn"><i class="fa fa-search fa-lg white"></i></a>
+          </div>
+          <a class="navbar-brand" href="#" style="color:black;">
+            Gold Coast Parking Map
+          </a>
+        </div>
+
+
+      </div>
+    </div>
+
+    <div id="container">
+
+      <div id="map"></div>
+
+    </div>
+
+
+    <!-- GEOJSON DATA -->
+    <script type="text/javascript" src="parking_bays.js"></script>
+
+    <!-- SCRIPT -->
+    <script>
+
+      // Google Mutant Layers
+      var GoogleMaps_Roads = L.gridLayer.googleMutant({
+          type: 'roadmap' // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
+      });
+      var GoogleMaps_Satellite = L.gridLayer.googleMutant({
+          type: 'satellite' // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
+      });
+      var GoogleMaps_Terrain = L.gridLayer.googleMutant({
+          type: 'terrain' // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
+      });
+      var GoogleMaps_Hybrid = L.gridLayer.googleMutant({
+          type: 'hybrid' // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
+      });
+      var GoogleMaps_Traffic = L.gridLayer.googleMutant({
+          type: 'roadmap' // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
+      });
+      GoogleMaps_Traffic.addGoogleLayer('TrafficLayer');
+
+      var GoogleMaps_Transit = L.gridLayer.googleMutant({
+          type: 'roadmap' // valid values are 'roadmap', 'satellite', 'terrain' and 'hybrid'
+      });
+      GoogleMaps_Transit.addGoogleLayer('TransitLayer');
+
+      var OSMstandard = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        //maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+      });
+
+      // OSM Mapnik Black & White
+      // Seems to produce errors as its insecure
+      var OSMmapnikBW = L.tileLayer("https://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png", {
+        //maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+      });
+
+      var cartoLightAll = L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png", {
+        //maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors, &copy; <a href="https://cartodb.com/attributions" target="_blank">CartoDB</a>'
+      });
+
+      var cartoDarkAll = L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png", {
+        //maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors, &copy; <a href="https://cartodb.com/attributions" target="_blank">CartoDB</a>'
+      });
+
+      // Note other Esri maps available
+      var EsriWorldImagery = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+        //maxZoom: 19,
+        attribution: 'Tiles &copy; Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+      });
+
+      //HERE maps
+      //App ID: 5zehNeBejLhpcy6fnJV6
+      //App Code: AxlSQn3jaPAKRB4VfUeqUg
+      var HereMapHybrid = L.tileLayer("https://1.aerial.maps.cit.api.here.com/maptile/2.1/maptile/newest/hybrid.day/{z}/{x}/{y}/256/png8?app_id=5zehNeBejLhpcy6fnJV6&app_code=AxlSQn3jaPAKRB4VfUeqUg&lg=eng", {
+        //maxZoom: 19,
+        attribution: 'Map &copy; 1987-2014 <a href="https://developer.here.com" target="_blank">HERE</a> | <a href="https://mapicons.mapsmarker.com" target="_blank">Maps Icons Collection</a> | Powered by <a href="https://www.planmapping.com/" target="_blank">PlanMapping.com</a>'
+      });
+
+
+      //Create a color dictionary based off of subway route_id
+      var parkColor = {
+        "5 Minutes Timed":"#83a4f7",
+        "1/4 Hour Timed":"#83a4f7",
+        "1/2 Hour Timed":"#83a4f7",
+        "1 Hour Paid":"#83a4f7",
+        "1 Hour Timed":"#83a4f7",
+        "2 Hour Paid":"#7097f9",
+        "2 Hour Timed":"#7097f9",
+        "3 Hour Paid":"#7d49ff",
+        "3 Hour Timed":"#7d49ff",
+        "4 Hour Paid":"#f442c2",
+        "4 Hour Timed":"#f442c2",
+        "6 Hour Timed":"#f4417a",
+        "All Day Paid":"#f44141",
+        "All Day Timed":"#f44141",
+        "Bus Zone":"#9ab5f9",
+        "Disabled":"#9ab5f9",
+        "Loading Zone":"#9ab5f9",
+        "Motorcycle":"#9ab5f9",
+        "Restricted":"#9ab5f9",
+        "Stopping":"#9ab5f9",
+        "Taxi Zone":"#9ab5f9",
+        "Unrestricted":"#9ab5f9"
+      };
+
+    	function style_parking_bay(feature) {
+    		return {
+          // Line
+          color: '#000000',
+    			weight: 0.3,
+    			opacity: 1,
+          dashArray: '',
+          // Fill
+          fillColor: parkColor[feature.properties.PARKING_TY],//'#f44141',
+          fillOpacity: 1
+    		};
+    	}
+
+
+
+    	function highlightFeature(e) {
+    		var layer = e.target;
+
+    		layer.setStyle({
+    			weight: 5,
+    			color: '#fff200',
+    			dashArray: '',
+    			fillOpacity: 1
+    		});
+
+    		if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+    			layer.bringToFront();
+    		}
+
+    		info.update(layer.feature.properties);
+        // End highlightFeature(e)
+    	}
+
+
+    	function zoomToFeature(e) {
+    		map.fitBounds(e.target.getBounds());
+    	}
+
+    	function onEachFeature(feature, layer) {
+    		layer.on({
+    			mouseover: highlightFeature,
+    			mouseout: resetHighlight,
+    			click: zoomToFeature
+    		});
+    	}
+
+      var parking_bays_data;
+    	parking_bays_data = L.geoJson(parking_bays_geojson, {
+    		style: style_parking_bay,
+    		onEachFeature: onEachFeature
+    	});
+
+      var geojsonMarkerOptions = {
+          radius: 3,
+          fillColor: '',
+          color: '#000000',
+          weight: 1,
+          opacity: 0,
+          fillOpacity: 0
+      };
+
+
+
+      function resetHighlight(e) {
+        parking_bays_data.resetStyle(e.target);
+        info.update();
+      }
+
+      var baseLayers = {
+        //Google Mutant Layers 'roadmap', 'satellite', 'terrain' and 'hybrid'
+        "Google Maps Hybrid": GoogleMaps_Hybrid,
+        "Google Maps Road": GoogleMaps_Roads,
+        "Google Maps Traffic": GoogleMaps_Traffic,
+        "Google Maps Transit": GoogleMaps_Transit,
+        "Google Maps Satellite": GoogleMaps_Satellite,
+        "Google Maps Terrain": GoogleMaps_Terrain,
+        "Open Street Maps": OSMstandard,
+        "CartoDB Light": cartoLightAll,
+        "CartoDB Dark": cartoDarkAll,
+        "Esri Aerial": EsriWorldImagery,
+        "HERE Maps Hybrid": HereMapHybrid
+      };
+
+      var overlayMaps = {
+          //"Parking Bays": parking_bays_data,
+      };
+
+
+      // Initialise the Leaflet.js map and set the default view latitude, longitude and zoom level
+    	var map = L.map('map', {
+        zoomControl: false,
+        Control: false,
+        layers: [GoogleMaps_Roads],
+        zoom: 11,
+        center: [-28.0, 153.35]
+      });
+
+
+      var hash = new L.Hash(map);
+
+
+      var zoomControl = L.control.zoom({
+        position: "bottomleft"
+      }).addTo(map);
+
+
+      var controlLayers = L.control.layers(baseLayers, overlayMaps, {
+        collapsed: false,
+        autoZIndex: false,
+        position: "topleft"
+      }).addTo(map);
+
+
+      /* Attribution control */
+      function updateAttribution(e) {
+        $.each(map._layers, function(index, layer) {
+          if (layer.getAttribution) {
+            $("#attribution").html((layer.getAttribution()));
+          }
+        });
+      }
+      map.on("layeradd", updateAttribution);
+      map.on("layerremove", updateAttribution);
+
+
+      /////////////////////////////////////////////////////////////////////////
+    	// Geocode search ... https://github.com/perliedman/leaflet-control-geocoder
+      var geocoder = L.Control.geocoder({
+          defaultMarkGeocode: false,
+          collapsed: false,
+          placeholder: 'Search for parking...',
+          errorMessage: 'Sorry, location not found',
+          showResultIcons: false
+      })
+      .on('markgeocode', function(e) {
+          var bbox = e.geocode.bbox;
+          var poly = L.polygon([
+               bbox.getSouthEast(),
+               bbox.getNorthEast(),
+               bbox.getNorthWest(),
+               bbox.getSouthWest()
+          //]).addTo(map);
+          ]);
+          map.fitBounds(poly.getBounds());
+      }).addTo(map);
+
+
+
+      /////////////////////////////////////////////////////////////////////////
+      // Leaflet-Measure https://github.com/ljagis/leaflet-measure
+      var measureControl = new L.Control.Measure({
+        position: 'bottomleft',
+        primaryLengthUnit: 'meters',
+        secondaryLengthUnit: 'kilometers',
+        primaryAreaUnit: 'hectares',
+        //secondaryAreaUnit: undefined,
+        activeColor: '#ABE67E',
+        completedColor: '#C8F2BE',
+        popupOptions: { className: 'leaflet-measure-resultpopup', autoPanPadding: [10, 10] },
+        localization: 'en',
+        captureZIndex: 10000,
+        decPoint: '.',
+        thousandsSep: ','
+      });
+      measureControl.addTo(map);
+
+
+      /////////////////////////////////////////////////////////////////////////
+    	// Control that shows state info on hover
+    	var info = L.control();
+
+    	info.onAdd = function (map) {
+    		this._div = L.DomUtil.create('div', 'info');
+    		this.update();
+    		return this._div;
+    	};
+
+    	info.update = function (props) {
+    		this._div.innerHTML = '<h4>Parking Bay Information</h4>' +  (props ?
+    			'Type: ' + props.PARKING_TY + '<br />' +
+          'Description: ' + props.DESCRIPTIO + '<br />' +
+          'Suburb: ' + props.SUBURB + '<br />' +
+          'Marked Bay: ' + props.MARKED_BAY + '<br />' +
+          'Loading Zone: ' + props.LOADINGZON + '<br />' +
+          'Sensor: ' + props.SENSOR_PRE + ''
+    			: 'Hover over a parking bay');
+    	};
+
+    	info.addTo(map);
+
+
+      /////////////////////////////////////////////////////////////////////////
+      // Leaflet Map Legend
+      var legend = L.control({position: 'bottomright'});
+
+            legend.onAdd = function (map) {
+
+              var div = L.DomUtil.create('div', 'info legend'),
+                grades = [0, 1, 2, 3, 4, 5, 6, 100], // These grades should be aligned to function getColor(d)
+                labels = [],
+                from, to;
+
+                labels.push('<b>Parking Time Limit</b>');
+                labels.push('<i style="background:' + parkColor["1 Hour Paid"] + '"></i> 1 hour or less');
+                labels.push('<i style="background:' + parkColor["2 Hour Paid"] + '"></i> 2 hours');
+                labels.push('<i style="background:' + parkColor["3 Hour Paid"] + '"></i> 3 hours');
+                labels.push('<i style="background:' + parkColor["4 Hour Paid"] + '"></i> 4 hours');
+                labels.push('<i style="background:' + parkColor["6 Hour Timed"] + '"></i> 6 hours');
+                labels.push('<i style="background:' + parkColor["All Day Paid"] + '"></i> All day');
+
+
+              div.innerHTML = labels.join('<br>');
+              return div;
+            };
+
+      legend.addTo(map);
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+      /* global L */
+
+      // A layer control which provides for layer groupings.
+      // Author: Ishmael Smyrnow
+      L.Control.GroupedLayers = L.Control.extend({
+
+        options: {
+          //collapsed: true,
+          collapsed: false,
+          position: 'topright',
+          autoZIndex: false
+        },
+
+        initialize: function (baseLayers, groupedOverlays, options) {
+          var i, j;
+          L.Util.setOptions(this, options);
+
+          this._layers = {};
+          this._lastZIndex = 0;
+          this._handlingClick = false;
+          this._groupList = [];
+          this._domGroups = [];
+
+          for (i in baseLayers) {
+            this._addLayer(baseLayers[i], i);
+          }
+
+          for (i in groupedOverlays) {
+            for (var j in groupedOverlays[i]) {
+              this._addLayer(groupedOverlays[i][j], j, i, true);
+            }
+          }
+        },
+
+        onAdd: function (map) {
+          this._initLayout();
+          this._update();
+
+          map
+              .on('layeradd', this._onLayerChange, this)
+              .on('layerremove', this._onLayerChange, this);
+
+          return this._container;
+        },
+
+        onRemove: function (map) {
+          map
+              .off('layeradd', this._onLayerChange)
+              .off('layerremove', this._onLayerChange);
+        },
+
+        addBaseLayer: function (layer, name) {
+          this._addLayer(layer, name);
+          this._update();
+          return this;
+        },
+
+        addOverlay: function (layer, name, group) {
+          this._addLayer(layer, name, group, true);
+          this._update();
+          return this;
+        },
+
+        removeLayer: function (layer) {
+          var id = L.Util.stamp(layer);
+          delete this._layers[id];
+          this._update();
+          return this;
+        },
+
+        _initLayout: function () {
+          var className = 'leaflet-control-layers',
+              container = this._container = L.DomUtil.create('div', className);
+
+          //Makes this work on IE10 Touch devices by stopping it from firing a mouseout event when the touch is released
+          container.setAttribute('aria-haspopup', true);
+
+          if (!L.Browser.touch) {
+            L.DomEvent.disableClickPropagation(container);
+            L.DomEvent.on(container, 'wheel', L.DomEvent.stopPropagation);
+          } else {
+            L.DomEvent.on(container, 'click', L.DomEvent.stopPropagation);
+          }
+
+          var form = this._form = L.DomUtil.create('form', className + '-list');
+
+          if (this.options.collapsed) {
+            if (!L.Browser.android) {
+              L.DomEvent
+                  .on(container, 'mouseover', this._expand, this)
+                  .on(container, 'mouseout', this._collapse, this);
+            }
+            var link = this._layersLink = L.DomUtil.create('a', className + '-toggle', container);
+            link.href = '#';
+            link.title = 'Layers';
+
+            if (L.Browser.touch) {
+              L.DomEvent
+                  .on(link, 'click', L.DomEvent.stop)
+                  .on(link, 'click', this._expand, this);
+            }
+            else {
+              L.DomEvent.on(link, 'focus', this._expand, this);
+            }
+
+            this._map.on('click', this._collapse, this);
+            // TODO keyboard accessibility
+          } else {
+            this._expand();
+          }
+
+          this._baseLayersList = L.DomUtil.create('div', className + '-base', form);
+          this._separator = L.DomUtil.create('div', className + '-separator', form);
+          this._overlaysList = L.DomUtil.create('div', className + '-overlays', form);
+
+          container.appendChild(form);
+        },
+
+        _addLayer: function (layer, name, group, overlay) {
+          var id = L.Util.stamp(layer);
+
+          this._layers[id] = {
+            layer: layer,
+            name: name,
+            overlay: overlay
+          };
+
+          if (group) {
+            var groupId = this._groupList.indexOf(group);
+
+            if (groupId === -1) {
+              groupId = this._groupList.push(group) - 1;
+            }
+
+            this._layers[id].group = {
+              name: group,
+              id: groupId
+            };
+          }
+
+          if (this.options.autoZIndex && layer.setZIndex) {
+            this._lastZIndex++;
+            layer.setZIndex(this._lastZIndex);
+          }
+        },
+
+        _update: function () {
+          if (!this._container) {
+            return;
+          }
+
+          this._baseLayersList.innerHTML = '';
+          this._overlaysList.innerHTML = '';
+          this._domGroups.length = 0;
+
+          var baseLayersPresent = false,
+              overlaysPresent = false,
+              i, obj;
+
+          for (i in this._layers) {
+            obj = this._layers[i];
+            this._addItem(obj);
+            overlaysPresent = overlaysPresent || obj.overlay;
+            baseLayersPresent = baseLayersPresent || !obj.overlay;
+          }
+
+          this._separator.style.display = overlaysPresent && baseLayersPresent ? '' : 'none';
+        },
+
+        _onLayerChange: function (e) {
+          var obj = this._layers[L.Util.stamp(e.layer)];
+
+          if (!obj) { return; }
+
+          if (!this._handlingClick) {
+            this._update();
+          }
+
+          var type = obj.overlay ?
+            (e.type === 'layeradd' ? 'overlayadd' : 'overlayremove') :
+            (e.type === 'layeradd' ? 'baselayerchange' : null);
+
+          if (type) {
+            this._map.fire(type, obj);
+          }
+        },
+
+        // IE7 bugs out if you create a radio dynamically, so you have to do it this hacky way (see http://bit.ly/PqYLBe)
+        _createRadioElement: function (name, checked) {
+
+          var radioHtml = '<input type="radio" class="leaflet-control-layers-selector" name="' + name + '"';
+          if (checked) {
+            radioHtml += ' checked="checked"';
+          }
+          radioHtml += '/>';
+
+          var radioFragment = document.createElement('div');
+          radioFragment.innerHTML = radioHtml;
+
+          return radioFragment.firstChild;
+        },
+
+        _addItem: function (obj) {
+          var label = document.createElement('label'),
+              input,
+              checked = this._map.hasLayer(obj.layer),
+              container;
+
+          if (obj.overlay) {
+            input = document.createElement('input');
+            input.type = 'checkbox';
+            input.className = 'leaflet-control-layers-selector';
+            input.defaultChecked = checked;
+          } else {
+            input = this._createRadioElement('leaflet-base-layers', checked);
+          }
+
+          input.layerId = L.Util.stamp(obj.layer);
+
+          L.DomEvent.on(input, 'click', this._onInputClick, this);
+
+          var name = document.createElement('span');
+          name.innerHTML = ' ' + obj.name;
+
+          label.appendChild(input);
+          label.appendChild(name);
+
+          if (obj.overlay) {
+            container = this._overlaysList;
+
+            var groupContainer = this._domGroups[obj.group.id];
+
+            // Create the group container if it doesn't exist
+            if (!groupContainer) {
+              groupContainer = document.createElement('div');
+              groupContainer.className = 'leaflet-control-layers-group';
+              groupContainer.id = 'leaflet-control-layers-group-' + obj.group.id;
+
+              var groupLabel = document.createElement('span');
+              groupLabel.className = 'leaflet-control-layers-group-name';
+              groupLabel.innerHTML = obj.group.name;
+
+              groupContainer.appendChild(groupLabel);
+              container.appendChild(groupContainer);
+
+              this._domGroups[obj.group.id] = groupContainer;
+            }
+
+            container = groupContainer;
+          } else {
+            container = this._baseLayersList;
+          }
+
+          container.appendChild(label);
+
+          return label;
+        },
+
+        _onInputClick: function () {
+          var i, input, obj,
+              inputs = this._form.getElementsByTagName('input'),
+              inputsLen = inputs.length;
+
+          this._handlingClick = true;
+
+          for (i = 0; i < inputsLen; i++) {
+            input = inputs[i];
+            obj = this._layers[input.layerId];
+
+            if (input.checked && !this._map.hasLayer(obj.layer)) {
+              this._map.addLayer(obj.layer);
+
+            } else if (!input.checked && this._map.hasLayer(obj.layer)) {
+              this._map.removeLayer(obj.layer);
+            }
+          }
+
+          this._handlingClick = false;
+        },
+
+        _expand: function () {
+          L.DomUtil.addClass(this._container, 'leaflet-control-layers-expanded');
+        },
+
+        _collapse: function () {
+          this._container.className = this._container.className.replace(' leaflet-control-layers-expanded', '');
+        }
+      });
+
+      L.control.groupedLayers = function (baseLayers, groupedOverlays, options) {
+        return new L.Control.GroupedLayers(baseLayers, groupedOverlays, options);
+      };
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  //// Delfate and Cluster Layer
+  /// https://github.com/oliverroick/Leaflet.Deflate
+
+            // Hacky solution to make a small transparent icon (don't want to show actual icons)
+            var clusterIcon = L.icon({
+              iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Talk_icon-transparent.svg/256px-Talk_icon-transparent.svg.png',
+              iconSize: [1, 1]
+            });
+            // Delfate + Marker Cluster Layer
+            var deflate_features = L.deflate({
+              minSize: 5,
+              markerCluster: true,
+              markerOptions: {
+                icon: clusterIcon
+              },
+              markerClusterOptions: {
+                chunkedLoading: true,
+                removeOutsideVisibleBounds: true,
+                spiderfyOnMaxZoom: true,
+                //showCoverageOnHover: false,
+                //zoomToBoundsOnClick: true,
+                disableClusteringAtZoom: 13
+                }
+            });
+            deflate_features.addTo(map);
+            deflate_features.addLayer(parking_bays_data);
+
+
+    </script>
+
+  </body>
+</html>
